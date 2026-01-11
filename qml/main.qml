@@ -22,9 +22,7 @@ import QtQuick.Layouts 1.12
 import QtQuick.Controls 2.12
 import QtQuick.Window 2.12
 
-import Lingmo.System 1.0 as System
 import Lingmo.StatusBar 1.0
-import Lingmo.NetworkManagement 1.0 as NM
 import LingmoUI.CompatibleModule 3.0 as LingmoUI
 
 Item {
@@ -516,15 +514,22 @@ Item {
         asynchronous: true
     }
 
-    NM.ActiveConnection {
+    QtObject {
         id: activeConnection
+        property string wirelessIcon: ""
+        property string wirelessName: ""
     }
 
-    NM.EnabledConnections {
+    QtObject {
         id: enabledConnections
+        property bool wirelessHwEnabled: false
+        property bool wirelessEnabled: false
     }
 
-    NM.Handler {
+    QtObject {
         id: nmHandler
+        function enableWireless(enabled) {
+            return
+        }
     }
 }
