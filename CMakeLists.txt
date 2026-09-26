@@ -27,6 +27,7 @@ set(SRCS
     src/activity.cpp
     src/capplications.cpp
     src/notifications.cpp
+    src/spotlightshortcut.cpp
     src/backgroundhelper.cpp
     src/lyricshelper.cpp
     src/permissionsurveillance.cpp
@@ -120,7 +121,7 @@ foreach(filepath ${TS_FILES})
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" filename ${filepath})
     list(APPEND ts_files_replaced ${filename})
 endforeach()
-Qt6_create_translation(QM_FILES ${CMAKE_CURRENT_SOURCE_DIR} ${ts_files_replaced})
+qt_add_translation(QM_FILES ${ts_files_replaced})
 
 add_custom_target(translations ALL DEPENDS ${QM_FILES} SOURCES ${ts_files_replaced})
 

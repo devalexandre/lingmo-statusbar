@@ -74,6 +74,11 @@ StatusBar::StatusBar(QQuickView *parent)
 
     // Always show on the main screen
     connect(qGuiApp, &QGuiApplication::primaryScreenChanged, this, &StatusBar::onPrimaryScreenChanged);
+
+    // The primary screen may have changed while the QML above was loading: the session
+    // runs autostart entries (xrandr layouts, ...) as soon as the desktop is up
+    if (screen() != qApp->primaryScreen())
+        onPrimaryScreenChanged(qApp->primaryScreen());
 }
 
 QRect StatusBar::screenRect()
@@ -149,7 +154,7 @@ void StatusBar::initState()
 
 void StatusBar::onPrimaryScreenChanged(QScreen *screen)
 {
-    disconnect(this->screen());
+    disconnect(this->screen(), nullptr, this, nullptr);
 
     setScreen(screen);
     updateGeometry();

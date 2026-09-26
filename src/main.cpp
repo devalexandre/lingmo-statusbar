@@ -28,6 +28,7 @@
 #include "appmenu/appmenuapplet.h"
 #include "poweractions.h"
 #include "notifications.h"
+#include "spotlightshortcut.h"
 #include "backgroundhelper.h"
 #include "lyricshelper.h"
 #include "permissionsurveillance.h"
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<AppMenuApplet>(uri, 1, 0, "AppMenuApplet");
     qmlRegisterType<PowerActions>(uri, 1, 0, "PowerActions");
     qmlRegisterType<Notifications>(uri, 1, 0, "Notifications");
+    qmlRegisterType<SpotlightShortcut>(uri, 1, 0, "SpotlightShortcut");
     qmlRegisterType<LyricsHelper>(uri, 1, 0, "LyricsHelper");
     qmlRegisterType<BackgroundHelper>(uri, 1, 0, "BackgroundHelper");
     qmlRegisterType<PermissionSurveillance>(uri, 1, 0, "PermissionSurveillance");

@@ -23,6 +23,7 @@ import QtQuick.Controls 2.12
 import QtQuick.Window 2.12
 
 import Lingmo.StatusBar 1.0
+import Lingmo.NetworkManagement 1.0 as NM
 import LingmoUI.CompatibleModule 3.0 as LingmoUI
 
 Item {
@@ -33,7 +34,8 @@ Item {
     LayoutMirroring.enabled: Qt.application.layoutDirection === Qt.RightToLeft
     LayoutMirroring.childrenInherit: true
 
-    property bool darkMode: false
+    // Follows the system theme (the wallpaper-driven colour logic was never ported)
+    property bool darkMode: LingmoUI.Theme.darkMode
     property color textColor: rootItem.darkMode ? "#FFFFFF" : "#000000";
     property var fontSize: rootItem.height ? rootItem.height / 3 : 1
 
@@ -70,10 +72,24 @@ Item {
     //     }
     // }
 
+    // Solid bar: white in the light theme, Dracula-like near-black in the dark one
     Rectangle {
         id: background
         anchors.fill: parent
-        opacity: 0.3
+        color: rootItem.darkMode ? "#282A36" : "#FFFFFF"
+
+        Behavior on color {
+            ColorAnimation { duration: 200 }
+        }
+
+        // Hairline separating the bar from the desktop
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 1
+            color: rootItem.darkMode ? Qt.rgba(1, 1, 1, 0.08) : Qt.rgba(0, 0, 0, 0.08)
+        }
 
 //        color: LingmoUI.Theme.darkMode ? "#4D4D4D" : "#FFFFFF"
 //        opacity: windowHelper.compositing ? LingmoUI.Theme.darkMode ? 0.5 : 0.7 : 1.0
@@ -99,6 +115,7 @@ Item {
 
         MenuItem {
             text: qsTr("Close")
+            icon.name: "window-close"
             onTriggered: acticity.close()
         }
     }
@@ -294,6 +311,46 @@ Item {
             }
         }
 
+        // Spotlight: click opens it, right click lets the user change its shortcut
+        StandardItem {
+            id: spotlightItem
+            animationEnabled: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: rootItem.iconSize + LingmoUI.Units.largeSpacing
+            popupText: qsTr("Spotlight") + (spotlightShortcut.shortcut ? " (" + spotlightShortcut.shortcut + ")" : "")
+
+            onClicked: function(mouse) {
+                if (mouse.button === Qt.RightButton)
+                    spotlightMenu.open()
+                else
+                    spotlightShortcut.openSpotlight()
+            }
+
+            // Magnifier glyph in the bar's text colour
+            Item {
+                anchors.centerIn: parent
+                width: rootItem.iconSize
+                height: width
+
+                Rectangle {
+                    x: 1; y: 1
+                    width: parent.width * 0.62; height: width
+                    radius: width / 2
+                    color: "transparent"
+                    border.width: 1.6
+                    border.color: rootItem.textColor
+                }
+                Rectangle {
+                    width: parent.width * 0.36; height: 1.8; radius: 0.9
+                    x: parent.width * 0.52; y: parent.height * 0.70
+                    rotation: 45
+                    transformOrigin: Item.Left
+                    color: rootItem.textColor
+                    antialiasing: true
+                }
+            }
+        }
+
         StandardItem {
             id: controler
 
@@ -338,20 +395,43 @@ Item {
                     smooth: false
                 }
 
-                Image {
-                    id: wirelessIcon
-                    width: rootItem.iconSize
-                    height: width
-                    sourceSize: Qt.size(width, height)
-                    source: activeConnection.wirelessIcon ? "qrc:/images/" + (rootItem.darkMode ? "dark/" : "light/") + activeConnection.wirelessIcon + ".svg" : ""
-                    asynchronous: true
+                // Network: wired, Wi-Fi (signal strength) or disconnected, plus a VPN badge
+                RowLayout {
+                    spacing: 3
                     Layout.alignment: Qt.AlignCenter
-                    visible: enabledConnections.wirelessHwEnabled &&
-                             enabledConnections.wirelessEnabled &&
-                             activeConnection.wirelessName &&
-                             wirelessIcon.status === Image.Ready
-                    antialiasing: true
-                    smooth: false
+
+                    Image {
+                        id: networkIcon
+                        width: rootItem.iconSize
+                        height: width
+                        sourceSize: Qt.size(width, height)
+                        source: "qrc:/images/" + (rootItem.darkMode ? "dark/" : "light/") + activeConnection.networkIcon + ".svg"
+                        asynchronous: true
+                        Layout.alignment: Qt.AlignCenter
+                        opacity: activeConnection.connectionType === "none" ? 0.45 : 1.0
+                        antialiasing: true
+                        smooth: false
+                    }
+
+                    Rectangle {
+                        visible: activeConnection.vpnActive
+                        Layout.alignment: Qt.AlignCenter
+                        implicitWidth: _vpnLabel.implicitWidth + 8
+                        implicitHeight: _vpnLabel.implicitHeight + 2
+                        radius: 3
+                        color: "transparent"
+                        border.width: 1
+                        border.color: rootItem.textColor
+
+                        Label {
+                            id: _vpnLabel
+                            anchors.centerIn: parent
+                            text: "VPN"
+                            font.pixelSize: 9
+                            font.bold: true
+                            color: rootItem.textColor
+                        }
+                    }
                 }
 
                 // Battery Item
@@ -422,16 +502,47 @@ Item {
                 id: _dateTimeLayout
                 anchors.fill: parent
 
-//                Image {
-//                    width: rootItem.iconSize
-//                    height: width
-//                    sourceSize: Qt.size(width, height)
-//                    source: "qrc:/images/" + (rootItem.darkMode ? "dark/" : "light/") + "notification-symbolic.svg"
-//                    asynchronous: true
-//                    Layout.alignment: Qt.AlignCenter
-//                    antialiasing: true
-//                    smooth: false
-//                }
+                // Notification bell: count badge, or the do-not-disturb icon
+                Item {
+                    Layout.alignment: Qt.AlignCenter
+                    implicitWidth: rootItem.iconSize + (_badge.visible ? _badge.width / 2 : 0)
+                    implicitHeight: rootItem.iconSize
+
+                    Image {
+                        id: _bell
+                        width: rootItem.iconSize
+                        height: width
+                        sourceSize: Qt.size(width, height)
+                        source: "qrc:/images/" + (rootItem.darkMode ? "dark/" : "light/")
+                                + (notificationState.doNotDisturb ? "do-not-disturb.svg"
+                                   : notificationState.count > 0 ? "notification-new-symbolic.svg"
+                                   : "notification-symbolic.svg")
+                        asynchronous: true
+                        antialiasing: true
+                        smooth: false
+                    }
+
+                    Rectangle {
+                        id: _badge
+                        visible: notificationState.count > 0 && !notificationState.doNotDisturb
+                        anchors.left: _bell.horizontalCenter
+                        anchors.top: _bell.top
+                        anchors.topMargin: -3
+                        height: 13
+                        width: Math.max(height, _badgeText.implicitWidth + 7)
+                        radius: height / 2
+                        color: "#F2555A"
+
+                        Label {
+                            id: _badgeText
+                            anchors.centerIn: parent
+                            text: notificationState.count > 99 ? "99+" : notificationState.count
+                            font.pixelSize: 9
+                            font.bold: true
+                            color: "white"
+                        }
+                    }
+                }
 
                 Label {
                     id: timeLabel
@@ -514,22 +625,143 @@ Item {
         asynchronous: true
     }
 
-    QtObject {
-        id: activeConnection
-        property string wirelessIcon: ""
-        property string wirelessName: ""
+    // Spotlight shortcut (stored in lingmo-chotkeys' config)
+    SpotlightShortcut {
+        id: spotlightShortcut
     }
 
-    QtObject {
-        id: enabledConnections
-        property bool wirelessHwEnabled: false
-        property bool wirelessEnabled: false
-    }
+    LingmoUI.DesktopMenu {
+        id: spotlightMenu
 
-    QtObject {
-        id: nmHandler
-        function enableWireless(enabled) {
-            return
+        MenuItem {
+            text: qsTr("Open Spotlight")
+            icon.name: "system-search"
+            onTriggered: spotlightShortcut.openSpotlight()
         }
+
+        MenuItem {
+            enabled: false
+            text: qsTr("Shortcut: %1").arg(spotlightShortcut.shortcut || qsTr("none"))
+        }
+
+        MenuItem {
+            text: qsTr("Change shortcut…")
+            icon.name: "preferences-desktop-keyboard-shortcuts"
+            onTriggered: shortcutDialog.show()
+        }
+    }
+
+    // Small window that records the next key combination
+    Window {
+        id: shortcutDialog
+        width: 360
+        height: 170
+        flags: Qt.Dialog | Qt.WindowStaysOnTopHint
+        title: qsTr("Spotlight shortcut")
+        color: rootItem.darkMode ? "#282A36" : "#FFFFFF"
+
+        property string captured: ""
+        property string error: ""
+
+        function show() {
+            captured = ""
+            error = ""
+            x = Screen.virtualX + (Screen.width - width) / 2
+            y = Screen.virtualY + Screen.height / 3
+            visible = true
+            requestActivate()
+            _capture.forceActiveFocus()
+        }
+
+        Item {
+            id: _capture
+            anchors.fill: parent
+            focus: true
+
+            Keys.onPressed: function(event) {
+                event.accepted = true
+                if (event.key === Qt.Key_Escape && event.modifiers === Qt.NoModifier) {
+                    shortcutDialog.close()
+                    return
+                }
+                var seq = spotlightShortcut.sequenceFromKey(event.key, event.modifiers)
+                if (seq !== "") {
+                    shortcutDialog.captured = seq
+                    shortcutDialog.error = ""
+                }
+            }
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 12
+                width: parent.width - 40
+
+                Label {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    text: qsTr("Press the new key combination for Spotlight")
+                    color: rootItem.textColor
+                }
+
+                Label {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    font.pointSize: 16
+                    font.bold: true
+                    text: shortcutDialog.captured || spotlightShortcut.shortcut || "…"
+                    color: shortcutDialog.captured ? LingmoUI.Theme.highlightColor : rootItem.textColor
+                }
+
+                Label {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    visible: shortcutDialog.error !== ""
+                    text: shortcutDialog.error
+                    color: "#F2555A"
+                    wrapMode: Text.WordWrap
+                }
+
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 10
+
+                    Button {
+                        text: qsTr("Cancel")
+                        onClicked: shortcutDialog.close()
+                    }
+
+                    Button {
+                        text: qsTr("Save")
+                        enabled: shortcutDialog.captured !== ""
+                        onClicked: {
+                            var err = spotlightShortcut.setShortcut(shortcutDialog.captured)
+                            if (err === "")
+                                shortcutDialog.close()
+                            else
+                                shortcutDialog.error = err
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Notification center state (count, do not disturb) from lingmo-notificationd
+    Notifications {
+        id: notificationState
+    }
+
+    // NetworkManager state (Lingmo.NetworkManagement from lib_lingmo)
+    NM.ActiveConnection {
+        id: activeConnection
+    }
+
+    NM.EnabledConnections {
+        id: enabledConnections
+    }
+
+    NM.Handler {
+        id: nmHandler
     }
 }

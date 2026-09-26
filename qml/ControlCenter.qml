@@ -27,6 +27,7 @@ import Lingmo.Accounts 1.0 as Accounts
 import Lingmo.Bluez 1.0 as Bluez
 import Lingmo.StatusBar 1.0
 import Lingmo.Audio 1.0
+import Lingmo.NetworkManagement 1.0 as NM
 import LingmoUI.CompatibleModule 3.0 as LingmoUI
 
 ControlCenterDialog {
@@ -296,6 +297,107 @@ ControlCenterDialog {
                     onClicked: {
                         control.visible = false
                         process.startDetached("lingmo-screenshot", ["-d", "500"])
+                    }
+                }
+            }
+        }
+
+        // Network: wired and VPN connections with an on/off switch each
+        Item {
+            id: networkItem
+            Layout.fillWidth: true
+            implicitHeight: _networkColumn.implicitHeight + LingmoUI.Units.largeSpacing
+            visible: _networkRepeater.visibleCount > 0
+
+            NM.NetworkModel {
+                id: _networkModel
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                color: "white"
+                radius: LingmoUI.Theme.bigRadius
+                opacity: LingmoUI.Theme.darkMode ? 0.2 : 0.7
+            }
+
+            Column {
+                id: _networkColumn
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.leftMargin: LingmoUI.Units.largeSpacing
+                anchors.rightMargin: LingmoUI.Units.largeSpacing
+                spacing: 2
+
+                Repeater {
+                    id: _networkRepeater
+                    model: _networkModel
+
+                    // Number of rows shown (wired + VPN), to hide the card when empty
+                    property int visibleCount: 0
+                    function recount() {
+                        var n = 0
+                        for (var i = 0; i < count; ++i)
+                            if (itemAt(i) && itemAt(i).shown) ++n
+                        visibleCount = n
+                    }
+                    onItemAdded: recount()
+                    onItemRemoved: recount()
+
+                    delegate: RowLayout {
+                        readonly property bool isVpn: model.type === NM.Enums.Vpn
+                        readonly property bool shown: (model.type === NM.Enums.Wired || isVpn)
+                                                      && !model.duplicate && model.connectionPath !== ""
+                        readonly property bool active: model.connectionState === NM.Enums.Activated
+                        readonly property bool busy: model.connectionState === NM.Enums.Activating
+                                                     || model.connectionState === NM.Enums.Deactivating
+
+                        visible: shown
+                        width: _networkColumn.width
+                        height: shown ? 36 : 0
+                        spacing: LingmoUI.Units.largeSpacing
+
+                        Image {
+                            Layout.preferredWidth: 16
+                            Layout.preferredHeight: 16
+                            sourceSize: Qt.size(16, 16)
+                            source: "qrc:/images/" + (LingmoUI.Theme.darkMode ? "dark/" : "light/")
+                                    + (parent.isVpn ? "network-wired-activated" : "network-wired") + ".svg"
+                            opacity: parent.active ? 1.0 : 0.5
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 0
+
+                            Label {
+                                Layout.fillWidth: true
+                                text: model.name
+                                elide: Text.ElideRight
+                                color: LingmoUI.Theme.textColor
+                            }
+
+                            Label {
+                                Layout.fillWidth: true
+                                text: parent.parent.busy ? qsTr("Connecting…")
+                                      : parent.parent.isVpn ? qsTr("VPN") : qsTr("Wired")
+                                font.pointSize: 8
+                                color: LingmoUI.Theme.disabledTextColor
+                            }
+                        }
+
+                        Switch {
+                            checked: parent.active || parent.busy
+                            enabled: !parent.busy
+                            onToggled: {
+                                if (checked)
+                                    nmHandler.activateConnection(model.connectionPath, model.devicePath, model.specificPath)
+                                else
+                                    nmHandler.deactivateConnection(model.connectionPath, model.devicePath)
+                            }
+                        }
+
+                        onShownChanged: _networkRepeater.recount()
                     }
                 }
             }
