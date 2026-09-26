@@ -557,8 +557,12 @@ Item {
                         running: true
                         triggeredOnStart: true
                         onTriggered: {
-                            timeLabel.text = new Date().toLocaleTimeString(Qt.locale(), StatusBar.twentyFourTime ? rootItem.timeFormat
-                                                                                                                 : Locale.ShortFormat)
+                            // Date and time in the system language, e.g. "sáb 26 set  13:47"
+                            const now = new Date()
+                            const date = now.toLocaleDateString(Qt.locale(), "ddd d MMM").replace(/\./g, "")
+                            const time = now.toLocaleTimeString(Qt.locale(), StatusBar.twentyFourTime ? rootItem.timeFormat
+                                                                                                    : Locale.ShortFormat)
+                            timeLabel.text = date + "  " + time
                         }
                     }
                 }
