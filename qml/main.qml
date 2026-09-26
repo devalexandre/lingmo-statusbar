@@ -351,6 +351,32 @@ Item {
             }
         }
 
+        // Keyboard layout: click switches to the next one, right click lists them
+        StandardItem {
+            id: keyboardItem
+            visible: keyboardLayout.count > 1
+            animationEnabled: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: Math.max(_layoutLabel.implicitWidth, rootItem.iconSize) + LingmoUI.Units.largeSpacing
+            popupText: keyboardLayout.currentDescription
+
+            onClicked: function(mouse) {
+                if (mouse.button === Qt.RightButton)
+                    keyboardMenu.open()
+                else
+                    keyboardLayout.next()
+            }
+
+            Label {
+                id: _layoutLabel
+                anchors.centerIn: parent
+                text: keyboardLayout.currentName
+                font.pointSize: rootItem.fontSize
+                font.bold: true
+                color: rootItem.textColor
+            }
+        }
+
         StandardItem {
             id: controler
 
@@ -486,84 +512,97 @@ Item {
             }
         }
 
-        // Pop-up notification center and calendar
+        // Notification center
         StandardItem {
-            id: datetimeItem
+            id: notificationItem
 
             animationEnabled: true
             Layout.fillHeight: true
-            Layout.preferredWidth: _dateTimeLayout.implicitWidth + LingmoUI.Units.smallSpacing
+            Layout.preferredWidth: _bellItem.implicitWidth + LingmoUI.Units.largeSpacing
 
             onClicked: {
                 process.startDetached("lingmo-notificationd", ["-s"])
             }
 
-            RowLayout {
-                id: _dateTimeLayout
-                anchors.fill: parent
+            // Notification bell: count badge, or the do-not-disturb icon
+            Item {
+                id: _bellItem
+                anchors.centerIn: parent
+                implicitWidth: rootItem.iconSize + (_badge.visible ? _badge.width / 2 : 0)
+                implicitHeight: rootItem.iconSize
+                width: implicitWidth
+                height: implicitHeight
 
-                // Notification bell: count badge, or the do-not-disturb icon
-                Item {
-                    Layout.alignment: Qt.AlignCenter
-                    implicitWidth: rootItem.iconSize + (_badge.visible ? _badge.width / 2 : 0)
-                    implicitHeight: rootItem.iconSize
-
-                    Image {
-                        id: _bell
-                        width: rootItem.iconSize
-                        height: width
-                        sourceSize: Qt.size(width, height)
-                        source: "qrc:/images/" + (rootItem.darkMode ? "dark/" : "light/")
-                                + (notificationState.doNotDisturb ? "do-not-disturb.svg"
-                                   : notificationState.count > 0 ? "notification-new-symbolic.svg"
-                                   : "notification-symbolic.svg")
-                        asynchronous: true
-                        antialiasing: true
-                        smooth: false
-                    }
-
-                    Rectangle {
-                        id: _badge
-                        visible: notificationState.count > 0 && !notificationState.doNotDisturb
-                        anchors.left: _bell.horizontalCenter
-                        anchors.top: _bell.top
-                        anchors.topMargin: -3
-                        height: 13
-                        width: Math.max(height, _badgeText.implicitWidth + 7)
-                        radius: height / 2
-                        color: "#F2555A"
-
-                        Label {
-                            id: _badgeText
-                            anchors.centerIn: parent
-                            text: notificationState.count > 99 ? "99+" : notificationState.count
-                            font.pixelSize: 9
-                            font.bold: true
-                            color: "white"
-                        }
-                    }
+                Image {
+                    id: _bell
+                    width: rootItem.iconSize
+                    height: width
+                    sourceSize: Qt.size(width, height)
+                    source: "qrc:/images/" + (rootItem.darkMode ? "dark/" : "light/")
+                            + (notificationState.doNotDisturb ? "do-not-disturb.svg"
+                               : notificationState.count > 0 ? "notification-new-symbolic.svg"
+                               : "notification-symbolic.svg")
+                    asynchronous: true
+                    antialiasing: true
+                    smooth: false
                 }
 
-                Label {
-                    id: timeLabel
-                    Layout.alignment: Qt.AlignCenter
-                    font.pointSize: rootItem.fontSize
-                    color: rootItem.textColor
+                Rectangle {
+                    id: _badge
+                    visible: notificationState.count > 0 && !notificationState.doNotDisturb
+                    anchors.left: _bell.horizontalCenter
+                    anchors.top: _bell.top
+                    anchors.topMargin: -3
+                    height: 13
+                    width: Math.max(height, _badgeText.implicitWidth + 7)
+                    radius: height / 2
+                    color: "#F2555A"
 
-                    Timer {
-                        id: timeTimer
-                        interval: 1000
-                        repeat: true
-                        running: true
-                        triggeredOnStart: true
-                        onTriggered: {
-                            // Date and time in the system language, e.g. "sáb 26 set  13:47"
-                            const now = new Date()
-                            const date = now.toLocaleDateString(Qt.locale(), "ddd d MMM").replace(/\./g, "")
-                            const time = now.toLocaleTimeString(Qt.locale(), StatusBar.twentyFourTime ? rootItem.timeFormat
-                                                                                                    : Locale.ShortFormat)
-                            timeLabel.text = date + "  " + time
-                        }
+                    Label {
+                        id: _badgeText
+                        anchors.centerIn: parent
+                        text: notificationState.count > 99 ? "99+" : notificationState.count
+                        font.pixelSize: 9
+                        font.bold: true
+                        color: "white"
+                    }
+                }
+            }
+        }
+
+        // Date and time: click shows the calendar
+        StandardItem {
+            id: datetimeItem
+
+            animationEnabled: true
+            Layout.fillHeight: true
+            Layout.preferredWidth: timeLabel.implicitWidth + LingmoUI.Units.largeSpacing
+            checked: calendarPopup.item ? calendarPopup.item.visible : false
+
+            onClicked: {
+                if (calendarPopup.item)
+                    calendarPopup.item.toggle(datetimeItem)
+            }
+
+            Label {
+                id: timeLabel
+                anchors.centerIn: parent
+                font.pointSize: rootItem.fontSize
+                color: rootItem.textColor
+
+                Timer {
+                    id: timeTimer
+                    interval: 1000
+                    repeat: true
+                    running: true
+                    triggeredOnStart: true
+                    onTriggered: {
+                        // Date and time in the system language, e.g. "sáb 26 set  13:47"
+                        const now = new Date()
+                        const date = now.toLocaleDateString(Qt.locale(), "ddd d MMM").replace(/\./g, "")
+                        const time = now.toLocaleTimeString(Qt.locale(), StatusBar.twentyFourTime ? rootItem.timeFormat
+                                                                                                : Locale.ShortFormat)
+                        timeLabel.text = date + "  " + time
                     }
                 }
             }
@@ -620,6 +659,12 @@ Item {
     Loader {
         id: controlCenter
         sourceComponent: ControlCenter {}
+        asynchronous: true
+    }
+
+    Loader {
+        id: calendarPopup
+        sourceComponent: CalendarPopup {}
         asynchronous: true
     }
 
@@ -748,6 +793,32 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    KeyboardLayout {
+        id: keyboardLayout
+    }
+
+    LingmoUI.DesktopMenu {
+        id: keyboardMenu
+
+        Repeater {
+            model: keyboardLayout.shortNames
+
+            MenuItem {
+                text: keyboardLayout.descriptions[index] || modelData
+                checkable: true
+                checked: index === keyboardLayout.currentIndex
+                onTriggered: keyboardLayout.currentIndex = index
+            }
+        }
+
+        MenuSeparator {}
+
+        MenuItem {
+            text: qsTr("Keyboard settings…")
+            onTriggered: process.startDetached("lingmo-settings", ["-m", "keyboard"])
         }
     }
 

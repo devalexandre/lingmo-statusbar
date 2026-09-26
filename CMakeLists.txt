@@ -31,6 +31,8 @@ set(SRCS
     src/backgroundhelper.cpp
     src/lyricshelper.cpp
     src/permissionsurveillance.cpp
+    src/nightlight.cpp
+    src/keyboardlayout.cpp
 
     src/systemtray/statusnotifieritemsource.cpp
     src/systemtray/systemtraytypes.cpp

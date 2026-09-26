@@ -116,6 +116,10 @@ ControlCenterDialog {
         id: brightness
     }
 
+    NightLight {
+        id: nightLight
+    }
+
     Accounts.UserAccount {
         id: currentUser
     }
@@ -275,6 +279,22 @@ ControlCenterDialog {
                     checked: LingmoUI.Theme.darkMode
                     label: qsTr("Dark Mode")
                     onClicked: appearance.switchDarkMode(!LingmoUI.Theme.darkMode)
+                }
+
+                CardItem {
+                    id: nightLightItem
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: cardItems.cellWidth
+                    icon: LingmoUI.Theme.darkMode || checked ? "qrc:/images/dark/night-light.svg"
+                                                           : "qrc:/images/light/night-light.svg"
+                    visible: nightLight.available
+                    checked: nightLight.enabled
+                    label: qsTr("Night Light")
+                    onClicked: nightLight.enabled = !nightLight.enabled
+                    onPressAndHold: {
+                        control.visible = false
+                        process.startDetached("lingmo-settings", ["-m", "display"])
+                    }
                 }
 
                 CardItem {
@@ -462,6 +482,65 @@ ControlCenterDialog {
 //                    color: LingmoUI.Theme.disabledTextColor
 //                    Layout.preferredWidth: _fontMetrics.advanceWidth("100%")
 //                }
+            }
+        }
+
+        // Night light warmth, while it is on
+        Item {
+            id: nightLightSliderItem
+            Layout.fillWidth: true
+            height: 40
+            visible: nightLight.available && nightLight.enabled
+
+            Rectangle {
+                id: nightLightSliderBg
+                anchors.fill: parent
+                color: "white"
+                radius: LingmoUI.Theme.bigRadius
+                opacity: LingmoUI.Theme.darkMode ? 0.2 : 0.7
+            }
+
+            RowLayout {
+                anchors.fill: nightLightSliderBg
+                anchors.leftMargin: LingmoUI.Units.largeSpacing
+                anchors.rightMargin: LingmoUI.Units.largeSpacing
+                anchors.topMargin: LingmoUI.Units.smallSpacing
+                anchors.bottomMargin: LingmoUI.Units.smallSpacing
+                spacing: LingmoUI.Units.largeSpacing
+
+                Image {
+                    height: 16
+                    width: height
+                    sourceSize: Qt.size(width, height)
+                    source: "qrc:/images/" + (LingmoUI.Theme.darkMode ? "dark" : "light") + "/night-light.svg"
+                    smooth: false
+                    antialiasing: true
+                }
+
+                Timer {
+                    id: nightLightTimer
+                    interval: 100
+                    repeat: false
+                    onTriggered: nightLight.temperature = nightLightSlider.value
+                }
+
+                // Warmer to the right
+                Slider {
+                    id: nightLightSlider
+                    from: nightLight.maxTemperature
+                    to: nightLight.minTemperature
+                    stepSize: 100
+                    value: nightLight.temperature
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    onMoved: nightLightTimer.start()
+                }
+
+                Label {
+                    text: nightLightSlider.value.toFixed(0) + " K"
+                    color: LingmoUI.Theme.disabledTextColor
+                    Layout.preferredWidth: _fontMetrics.advanceWidth("6500 K")
+                }
             }
         }
 
