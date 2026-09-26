@@ -21,6 +21,7 @@
 #define STATUSBAR_H
 
 #include <QQuickView>
+#include <QTimer>
 #include "activity.h"
 
 class StatusBar : public QQuickView
@@ -49,8 +50,13 @@ signals:
 private slots:
     void initState();
     void onPrimaryScreenChanged(QScreen *screen);
+    // Back on top of the primary screen, wherever it is now
+    void followPrimaryScreen();
 
 private:
+    void watchScreen(QScreen *screen);
+
+    QTimer *m_relayout;
     QRect m_screenRect;
     Activity *m_acticity;
     bool m_twentyFourTime;
