@@ -195,7 +195,7 @@ void Activity::onActiveWindowChanged()
     emit launchPadChanged();
 
     if (NET::typeMatchesMask(info.windowType(NET::AllTypesMask), NET::DesktopMask)) {
-        m_title = tr("");
+        m_title = QString();
         m_icon = "sysytemlogo";
 
         emit titleChanged();

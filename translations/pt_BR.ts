@@ -2,17 +2,9 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="pt_BR">
 <context>
-    <name>Activity</name>
-    <message>
-        <location filename="../src/activity.cpp" line="198"/>
-        <source></source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>CalendarPopup</name>
     <message>
-        <location filename="../qml/CalendarPopup.qml" line="180"/>
+        <location filename="../qml/CalendarPopup.qml" line="+180"/>
         <source>Today</source>
         <translation>Hoje</translation>
     </message>
@@ -20,52 +12,52 @@
 <context>
     <name>ControlCenter</name>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="249"/>
+        <location filename="../qml/ControlCenter.qml" line="+249"/>
         <source>Wi-Fi</source>
         <translation>Wi-Fi</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="178"/>
+        <location line="-71"/>
         <source>Control Center</source>
         <translation>Central de controle</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="264"/>
+        <location line="+86"/>
         <source>Bluetooth</source>
         <translation>Bluetooth</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="280"/>
+        <location line="+16"/>
         <source>Dark Mode</source>
         <translation>Modo escuro</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="292"/>
+        <location line="+12"/>
         <source>Night Light</source>
         <translation>Luz noturna</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="306"/>
+        <location line="+14"/>
         <source>Do Not Disturb</source>
         <translation>Não perturbe</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="316"/>
+        <location line="+10"/>
         <source>Screenshot</source>
         <translation>Captura de tela</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="402"/>
+        <location line="+86"/>
         <source>Connecting…</source>
         <translation>Conectando…</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="403"/>
+        <location line="+1"/>
         <source>VPN</source>
         <translation>VPN</translation>
     </message>
     <message>
-        <location filename="../qml/ControlCenter.qml" line="403"/>
+        <location line="+0"/>
         <source>Wired</source>
         <translation>Cabeada</translation>
     </message>
@@ -73,27 +65,27 @@
 <context>
     <name>ShutdownDialog</name>
     <message>
-        <location filename="../qml/ShutdownDialog.qml" line="140"/>
+        <location filename="../qml/ShutdownDialog.qml" line="+140"/>
         <source>Shutdown</source>
         <translation>Desligar</translation>
     </message>
     <message>
-        <location filename="../qml/ShutdownDialog.qml" line="155"/>
+        <location line="+15"/>
         <source>Reboot</source>
         <translation>Reiniciar</translation>
     </message>
     <message>
-        <location filename="../qml/ShutdownDialog.qml" line="170"/>
+        <location line="+15"/>
         <source>Log out</source>
-        <translation>Sair</translation>
+        <translation>Encerrar sessão</translation>
     </message>
     <message>
-        <location filename="../qml/ShutdownDialog.qml" line="185"/>
+        <location line="+15"/>
         <source>Lock Screen</source>
         <translation>Bloquear tela</translation>
     </message>
     <message>
-        <location filename="../qml/ShutdownDialog.qml" line="200"/>
+        <location line="+15"/>
         <source>Suspend</source>
         <translation>Suspender</translation>
     </message>
@@ -101,12 +93,12 @@
 <context>
     <name>SpotlightShortcut</name>
     <message>
-        <location filename="../src/spotlightshortcut.cpp" line="69"/>
+        <location filename="../src/spotlightshortcut.cpp" line="+69"/>
         <source>Invalid shortcut</source>
         <translation>Atalho inválido</translation>
     </message>
     <message>
-        <location filename="../src/spotlightshortcut.cpp" line="75"/>
+        <location line="+6"/>
         <source>%1 is already used by %2</source>
         <translation>%1 já é usado por %2</translation>
     </message>
@@ -114,62 +106,62 @@
 <context>
     <name>main</name>
     <message>
-        <location filename="../qml/main.qml" line="117"/>
+        <location filename="../qml/main.qml" line="+117"/>
         <source>Close</source>
         <translation>Fechar</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="297"/>
+        <location line="+180"/>
         <source>is using the camera</source>
         <translation>está usando a câmera</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="320"/>
+        <location line="+23"/>
         <source>Spotlight</source>
         <translation>Spotlight</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="686"/>
+        <location line="+366"/>
         <source>Open Spotlight</source>
         <translation>Abrir o Spotlight</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="693"/>
+        <location line="+7"/>
         <source>Shortcut: %1</source>
         <translation>Atalho: %1</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="693"/>
+        <location line="+0"/>
         <source>none</source>
         <translation>nenhum</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="697"/>
+        <location line="+4"/>
         <source>Change shortcut…</source>
         <translation>Alterar atalho…</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="709"/>
+        <location line="+12"/>
         <source>Spotlight shortcut</source>
         <translation>Atalho do Spotlight</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="752"/>
+        <location line="+43"/>
         <source>Press the new key combination for Spotlight</source>
         <translation>Pressione a nova combinação de teclas para o Spotlight</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="779"/>
+        <location line="+27"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="784"/>
+        <location line="+5"/>
         <source>Save</source>
         <translation>Salvar</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="820"/>
+        <location line="+36"/>
         <source>Keyboard settings…</source>
         <translation>Configurações do teclado…</translation>
     </message>
